@@ -54,44 +54,6 @@ public class Bag extends AbstractBag {
         return removeAndGet(o) != null;
     }
 
-    Object removeAndGet(Object o) {
-        List<Object> group = data.get(o);
-        if (group == null) {
-            return null;
-        }
-        size--;
-        modCount++;
-        Object result = group.remove(group.size() - 1);
-        if (group.isEmpty()) {
-            data.remove(o);
-        }
-        return result;
-    }
-
-    boolean removeExactly(Object o) {
-        List group = data.get(o);
-        if (group == null) {
-            return false;
-        }
-        for (Iterator it = group.iterator(); it.hasNext(); ) {
-            Object cur = it.next();
-            if (cur == o) {
-                it.remove();
-                if (group.isEmpty()) {
-                    data.remove(o);
-                }
-                size--;
-                modCount++;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    int getModCount() {
-        return modCount;
-    }
-
     @Override
     public boolean removeAll(Collection collection) {
         boolean result = false;
@@ -145,6 +107,44 @@ public class Bag extends AbstractBag {
     @Override
     public int size() {
         return size;
+    }
+
+    Object removeAndGet(Object o) {
+        List<Object> group = data.get(o);
+        if (group == null) {
+            return null;
+        }
+        size--;
+        modCount++;
+        Object result = group.remove(group.size() - 1);
+        if (group.isEmpty()) {
+            data.remove(o);
+        }
+        return result;
+    }
+
+    boolean removeExactly(Object o) {
+        List group = data.get(o);
+        if (group == null) {
+            return false;
+        }
+        for (Iterator it = group.iterator(); it.hasNext(); ) {
+            Object cur = it.next();
+            if (cur == o) {
+                it.remove();
+                if (group.isEmpty()) {
+                    data.remove(o);
+                }
+                size--;
+                modCount++;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int getModCount() {
+        return modCount;
     }
 
     public class BagIterator implements Iterator {
