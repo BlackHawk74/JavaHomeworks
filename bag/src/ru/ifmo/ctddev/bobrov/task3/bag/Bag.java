@@ -147,7 +147,7 @@ public class Bag extends AbstractBag {
         return modCount;
     }
 
-    public class BagIterator implements Iterator {
+    private class BagIterator implements Iterator {
         private int expectedModCount = modCount;
 
         private Iterator mapIterator;

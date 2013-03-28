@@ -144,14 +144,11 @@ public class LinkedBag extends AbstractBag {
 
         @Override
         public boolean equals(Object o) {
-            if (o instanceof DataHolder) {
-                return value.equals(((DataHolder) o).value);
-            }
-            return false;
+            return o instanceof DataHolder && value.equals(((DataHolder) o).value);
         }
     }
 
-    public class LinkedBagIterator implements Iterator {
+    private class LinkedBagIterator implements Iterator {
         private DataHolder data = head;
         private int expectedModCount = getModCount();
         private boolean canRemove = false;
