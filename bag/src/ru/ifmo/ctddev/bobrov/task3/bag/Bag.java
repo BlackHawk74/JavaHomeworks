@@ -3,7 +3,7 @@ package ru.ifmo.ctddev.bobrov.task3.bag;
 import java.util.*;
 
 public class Bag extends AbstractBag {
-    private Map<Object, List<Object>> data;
+    private final Map<Object, List<Object>> data;
     private int modCount = 0;
     private int size = 0;
 
@@ -150,7 +150,7 @@ public class Bag extends AbstractBag {
     private class BagIterator implements Iterator {
         private int expectedModCount = modCount;
 
-        private Iterator mapIterator;
+        private final Iterator mapIterator;
         private Iterator groupIterator;
         private boolean canRemove = false;
         private Object last;

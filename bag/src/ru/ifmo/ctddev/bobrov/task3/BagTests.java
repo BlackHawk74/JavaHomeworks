@@ -22,8 +22,7 @@ public class BagTests {
         HashMap<Object, Integer> prev = new HashMap<>();
         Object lastGroup = null;
         int counter = 0;
-        for (Iterator it = bag.iterator(); it.hasNext(); ) {
-            Object last = it.next();
+        for (Object last : bag) {
             counter++;
             if (!last.equals(lastGroup)) {
                 if (prev.containsKey(last)) {

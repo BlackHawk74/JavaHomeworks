@@ -28,7 +28,7 @@ public abstract class AbstractBag implements Collection {
 
     @Override
     public boolean containsAll(Collection collection) {
-        return collection.stream().allMatch(obj -> contains(obj));
+        return collection.stream().allMatch(this::contains);
     }
 
     @Override
@@ -36,6 +36,6 @@ public abstract class AbstractBag implements Collection {
         if (collection == this) {
             return addAll(Arrays.asList(collection.toArray()));
         }
-        return collection.stream().allMatch(obj -> add(obj));
+        return collection.stream().allMatch(this::add);
     }
 }

@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 public class LinkedBag extends AbstractBag {
-    private Bag data;
-    private DataHolder head;
+    private final Bag data;
+    private final DataHolder head;
 
     public LinkedBag() {
         head = new DataHolder(null).makeSelfReference();
@@ -56,10 +56,7 @@ public class LinkedBag extends AbstractBag {
 
     @Override
     public boolean retainAll(Collection collection) {
-        if (collection == this) {
-            return false;
-        }
-        return bulkRemoveImpl(o -> !collection.contains(o));
+        return collection != this && bulkRemoveImpl(o -> !collection.contains(o));
     }
 
     private boolean bulkRemoveImpl(Predicate predicate) {
@@ -89,7 +86,7 @@ public class LinkedBag extends AbstractBag {
     }
 
     private static class DataHolder {
-        private Object value;
+        private final Object value;
         private DataHolder next;
         private DataHolder prev;
 
