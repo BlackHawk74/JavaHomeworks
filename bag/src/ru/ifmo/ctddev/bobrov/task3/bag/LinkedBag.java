@@ -6,69 +6,58 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
-public class LinkedBag extends AbstractCollection {
-    private final Bag data;
-    private final DataHolder head;
+public class LinkedBag<E> extends AbstractCollection<E> {
+    private final Bag<DataHolder<E>> data;
+    private final DataHolder<E> head;
 
     public LinkedBag() {
-        head = new DataHolder(null).makeSelfReference();
-        data = new Bag();
+        head = new DataHolder<E>(null).makeSelfReference();
+        data = new Bag<>();
     }
 
-    public LinkedBag(Collection collection) {
+    public LinkedBag(Collection<? extends E> collection) {
         this();
         addAll(collection);
     }
 
     @Override
-    public boolean contains(Object o) {
-        return data.contains(new DataHolder(o));
+    public boolean contains(Object el) {
+        return data.contains(new DataHolder<>(el));
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<E> iterator() {
         return new LinkedBagIterator();
     }
 
     @Override
-    public boolean add(Object o) {
-        return data.add(new DataHolder(o, head, head.getPrev()));
+    public boolean add(E el) {
+        return data.add(new DataHolder<>(el, head, head.getPrev()));
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> collection) {
+        if (collection == this) {
+            boolean modified = !isEmpty();
+            clear();
+            return modified;
+        }
+        return filter(collection::contains);
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> collection) {
+        return collection != this && filter(o -> !collection.contains(o));
     }
 
     @Override
     public boolean remove(Object o) {
-        DataHolder holder = (DataHolder) data.removeAndGet(new DataHolder(o));
+        DataHolder<E> holder = data.removeAndGet(new DataHolder<>(o));
         if (holder != null) {
             holder.removeReferences();
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean removeAll(Collection collection) {
-        if (collection == this) {
-            boolean result = !isEmpty();
-            clear();
-            return result;
-        }
-        return bulkRemoveImpl(collection::contains);
-    }
-
-    @Override
-    public boolean retainAll(Collection collection) {
-        return collection != this && bulkRemoveImpl(o -> !collection.contains(o));
-    }
-
-    private boolean bulkRemoveImpl(Predicate predicate) {
-        boolean result = false;
-        for (Iterator it = iterator(); it.hasNext(); ) {
-            if (predicate.test(it.next())) {
-                it.remove();
-                result = true;
-            }
-        }
-        return result;
     }
 
     @Override
@@ -82,12 +71,23 @@ public class LinkedBag extends AbstractCollection {
         return data.size();
     }
 
+    private boolean filter(Predicate<Object> predicate) {
+        boolean modified = false;
+        for (Iterator <E> it = iterator(); it.hasNext();) {
+            if (predicate.test(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
+    }
+
     private int getModCount() {
         return data.getModCount();
     }
 
-    private class LinkedBagIterator implements Iterator {
-        private DataHolder position = head;
+    private class LinkedBagIterator implements Iterator<E> {
+        private DataHolder<E> position = head;
         private int expectedModCount = getModCount();
         private boolean canRemove = false;
 
@@ -98,7 +98,7 @@ public class LinkedBag extends AbstractCollection {
         }
 
         @Override
-        public Object next() {
+        public E next() {
             checkModCount();
             if (!hasNext()) {
                 throw new IllegalStateException();
@@ -131,16 +131,16 @@ public class LinkedBag extends AbstractCollection {
         }
     }
 
-    private final static class DataHolder {
-        private final Object value;
-        private DataHolder next;
-        private DataHolder prev;
+    private static final class DataHolder<T> {
+        private final T value;
+        private DataHolder<T> next;
+        private DataHolder<T> prev;
 
-        public DataHolder(Object value) {
+        public DataHolder(T value) {
             this(value, null, null);
         }
 
-        public DataHolder(Object value, DataHolder next, DataHolder prev) {
+        public DataHolder(T value, DataHolder<T> next, DataHolder<T> prev) {
             this.value = value;
             this.next = next;
             this.prev = prev;
@@ -153,15 +153,15 @@ public class LinkedBag extends AbstractCollection {
             }
         }
 
-        public Object getValue() {
+        public T getValue() {
             return value;
         }
 
-        public DataHolder getNext() {
+        public DataHolder<T> getNext() {
             return next;
         }
 
-        public DataHolder getPrev() {
+        public DataHolder<T> getPrev() {
             return prev;
         }
 
@@ -174,7 +174,7 @@ public class LinkedBag extends AbstractCollection {
             }
         }
 
-        public DataHolder makeSelfReference() {
+        public DataHolder<T> makeSelfReference() {
             next = this;
             prev = this;
             return this;
@@ -187,7 +187,11 @@ public class LinkedBag extends AbstractCollection {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof DataHolder && value.equals(((DataHolder) o).value);
+            if (!(o instanceof DataHolder)) {
+                return false;
+            }
+            DataHolder t = DataHolder.class.cast(o);
+            return value.equals(t.value);
         }
     }
 }

@@ -2,8 +2,8 @@ package ru.ifmo.ctddev.bobrov.task3.bag;
 
 import java.util.*;
 
-public class Bag extends AbstractCollection {
-    private final Map<Object, List> data;
+public class Bag<E> extends AbstractCollection<E> {
+    private final Map<E, List<E>> data;
     private int modCount = 0;
     private long size = 0;
 
@@ -12,7 +12,7 @@ public class Bag extends AbstractCollection {
         data = new HashMap<>();
     }
 
-    public Bag(Collection collection) {
+    public Bag(Collection<? extends E> collection) {
         this();
         addAll(collection);
     }
@@ -23,60 +23,54 @@ public class Bag extends AbstractCollection {
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<E> iterator() {
         return new BagIterator();
     }
 
     @Override
-    public boolean add(Object o) {
-        if (o == null) {
+    public boolean add(E element) {
+        if (element == null) {
             throw new NullPointerException();
         }
         modCount++;
         size++;
-        if (!contains(o)) {
-            data.put(o, new ArrayList<Object>() {{
-                add(0, o);
+        if (!contains(element)) {
+            data.put(element, new ArrayList<E>() {{
+                add(0, element);
             }});
             return true;
         }
-        List<Object> group = data.get(o);
-        return group.add(o);
+        List<E> group = data.get(element);
+        return group.add(element);
     }
 
     @Override
-    public boolean remove(Object o) {
-        if (o == null) {
+    public boolean remove(Object element) {
+        if (element == null) {
             throw new NullPointerException();
         }
-        return removeAndGet(o) != null;
+        return removeAndGet(element) != null;
     }
 
     @Override
-    public boolean removeAll(Collection collection) {
-        boolean result = false;
+    public boolean removeAll(Collection<?> collection) {
+        boolean modified = false;
         if (collection == this) {
-            result = !isEmpty();
+            modified = !isEmpty();
             clear();
-            return result;
+            return modified;
         }
-
-        for (Object obj : collection) {
-            List group = data.get(obj);
-            if (group != null) {
-                result = true;
-                size -= group.size();
-                data.remove(obj);
+        for (Object o: collection) {
+            if (data.containsKey(o)) {
+                data.remove(o);
+                modified = true;
             }
         }
-        if (result) {
-            modCount++;
-        }
-        return result;
+        return modified;
     }
 
     @Override
-    public boolean retainAll(Collection collection) {
+    public boolean retainAll(Collection<?> collection) {
         if (collection == this) {
             return false;
         }
@@ -85,7 +79,7 @@ public class Bag extends AbstractCollection {
             Object obj = it.next();
             if (!collection.contains(obj)) {
                 result = true;
-                size -= data.get(obj).size();
+                size = size - data.get(obj).size();
                 it.remove();
             }
         }
@@ -107,29 +101,34 @@ public class Bag extends AbstractCollection {
         return size > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) size;
     }
 
-    Object removeAndGet(Object o) {
-        List<Object> group = data.get(o);
+    @Override
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    E removeAndGet(Object o) {
+        List<E> group = data.get(o);
         if (group == null) {
             return null;
         }
         size--;
         modCount++;
-        Object result = group.remove(group.size() - 1);
+        E result = group.remove(group.size() - 1);
         if (group.isEmpty()) {
             data.remove(o);
         }
         return result;
     }
 
-    boolean removeExactly(Object o) {
-        List group = data.get(o);
+    boolean removeExactly(E what) {
+        List<E> group = data.get(what);
         if (group != null) {
-            for (Iterator it = group.iterator(); it.hasNext(); ) {
-                Object cur = it.next();
-                if (cur == o) {
+            for (Iterator<E> it = group.iterator(); it.hasNext(); ) {
+                E cur = it.next();
+                if (cur == what) {
                     it.remove();
                     if (group.isEmpty()) {
-                        data.remove(o);
+                        data.remove(what);
                     }
                     size--;
                     modCount++;
@@ -144,13 +143,13 @@ public class Bag extends AbstractCollection {
         return modCount;
     }
 
-    private class BagIterator implements Iterator {
+    private class BagIterator implements Iterator<E> {
         private int expectedModCount = modCount;
 
-        private final Iterator mapIterator;
-        private Iterator groupIterator;
+        private final Iterator<E> mapIterator;
+        private Iterator<E> groupIterator;
         private boolean canRemove = false;
-        private Object last;
+        private E last;
 
         public BagIterator() {
             mapIterator = data.keySet().iterator();
@@ -163,13 +162,13 @@ public class Bag extends AbstractCollection {
         }
 
         @Override
-        public Object next() {
+        public E next() {
             checkModCount();
             if (groupIterator == null || !groupIterator.hasNext()) {
                 last = mapIterator.next();
                 groupIterator = data.get(last).iterator();
             }
-            Object result = groupIterator.next();
+            E result = groupIterator.next();
             canRemove = true;
             return result;
         }
@@ -181,7 +180,7 @@ public class Bag extends AbstractCollection {
             }
             checkModCount();
             groupIterator.remove();
-            List group = data.get(last);
+            List<E> group = data.get(last);
             if (group.isEmpty()) {
                 data.remove(last);
             }
