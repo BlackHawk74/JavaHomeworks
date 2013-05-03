@@ -1,11 +1,12 @@
 package ru.ifmo.ctddev.bobrov.task3.bag;
 
+import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
-public class LinkedBag extends AbstractBag {
+public class LinkedBag extends AbstractCollection {
     private final Bag data;
     private final DataHolder head;
 
@@ -85,7 +86,52 @@ public class LinkedBag extends AbstractBag {
         return data.getModCount();
     }
 
-    private static class DataHolder {
+    private class LinkedBagIterator implements Iterator {
+        private DataHolder position = head;
+        private int expectedModCount = getModCount();
+        private boolean canRemove = false;
+
+        @Override
+        public boolean hasNext() {
+            checkModCount();
+            return position.getNext() != head;
+        }
+
+        @Override
+        public Object next() {
+            checkModCount();
+            if (!hasNext()) {
+                throw new IllegalStateException();
+            }
+            position = position.getNext();
+            canRemove = true;
+            return position.getValue();
+        }
+
+        @Override
+        public void remove() {
+            if (!canRemove) {
+                throw new IllegalStateException("Remove called before next");
+            }
+            checkModCount();
+            if (data.removeExactly(position)) {
+                position.removeReferences();
+                position = position.prev;
+                expectedModCount = getModCount();
+                canRemove = false;
+            } else {
+                assert false;
+            }
+        }
+
+        private void checkModCount() {
+            if (getModCount() != expectedModCount) {
+                throw new ConcurrentModificationException("Iterator is not valid because collection is modified");
+            }
+        }
+    }
+
+    private final static class DataHolder {
         private final Object value;
         private DataHolder next;
         private DataHolder prev;
@@ -107,15 +153,15 @@ public class LinkedBag extends AbstractBag {
             }
         }
 
-        private Object getValue() {
+        public Object getValue() {
             return value;
         }
 
-        private DataHolder getNext() {
+        public DataHolder getNext() {
             return next;
         }
 
-        private DataHolder getPrev() {
+        public DataHolder getPrev() {
             return prev;
         }
 
@@ -142,50 +188,6 @@ public class LinkedBag extends AbstractBag {
         @Override
         public boolean equals(Object o) {
             return o instanceof DataHolder && value.equals(((DataHolder) o).value);
-        }
-    }
-
-    private class LinkedBagIterator implements Iterator {
-        private DataHolder data = head;
-        private int expectedModCount = getModCount();
-        private boolean canRemove = false;
-
-        @Override
-        public boolean hasNext() {
-            checkModCount();
-            return data.getNext() != head;
-        }
-
-        @Override
-        public Object next() {
-            checkModCount();
-            if (!hasNext()) {
-                throw new IllegalStateException();
-            }
-            data = data.getNext();
-            canRemove = true;
-            return data.getValue();
-        }
-
-        @Override
-        public void remove() {
-            if (!canRemove) {
-                throw new IllegalStateException("Remove called before next");
-            }
-            checkModCount();
-            if (LinkedBag.this.data.removeExactly(data)) {
-                data.removeReferences();
-                expectedModCount = getModCount();
-                canRemove = false;
-            } else {
-                assert false;
-            }
-        }
-
-        private void checkModCount() {
-            if (getModCount() != expectedModCount) {
-                throw new ConcurrentModificationException("Iterator is not valid because collection is modified");
-            }
         }
     }
 }

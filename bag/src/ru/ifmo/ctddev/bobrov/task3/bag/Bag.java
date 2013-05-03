@@ -2,10 +2,10 @@ package ru.ifmo.ctddev.bobrov.task3.bag;
 
 import java.util.*;
 
-public class Bag extends AbstractBag {
-    private final Map<Object, List<Object>> data;
+public class Bag extends AbstractCollection {
+    private final Map<Object, List> data;
     private int modCount = 0;
-    private int size = 0;
+    private long size = 0;
 
 
     public Bag() {
@@ -33,9 +33,7 @@ public class Bag extends AbstractBag {
             throw new NullPointerException();
         }
         modCount++;
-        if (size != Integer.MAX_VALUE) {
-            size++;
-        }
+        size++;
         if (!contains(o)) {
             data.put(o, new ArrayList<Object>() {{
                 add(0, o);
@@ -106,7 +104,7 @@ public class Bag extends AbstractBag {
 
     @Override
     public int size() {
-        return size;
+        return size > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) size;
     }
 
     Object removeAndGet(Object o) {
@@ -125,19 +123,18 @@ public class Bag extends AbstractBag {
 
     boolean removeExactly(Object o) {
         List group = data.get(o);
-        if (group == null) {
-            return false;
-        }
-        for (Iterator it = group.iterator(); it.hasNext(); ) {
-            Object cur = it.next();
-            if (cur == o) {
-                it.remove();
-                if (group.isEmpty()) {
-                    data.remove(o);
+        if (group != null) {
+            for (Iterator it = group.iterator(); it.hasNext(); ) {
+                Object cur = it.next();
+                if (cur == o) {
+                    it.remove();
+                    if (group.isEmpty()) {
+                        data.remove(o);
+                    }
+                    size--;
+                    modCount++;
+                    return true;
                 }
-                size--;
-                modCount++;
-                return true;
             }
         }
         return false;
