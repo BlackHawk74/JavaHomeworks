@@ -31,7 +31,7 @@ public class B extends A {
     }
 
     private void test(String a, String b, String c, String... args) {
-        System.out.println(2);
+        System.out.println(12);
         System.out.print(a + " " + b + " " + c);
         for (String s : args) {
             System.out.print(" " + s);

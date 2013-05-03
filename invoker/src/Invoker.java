@@ -6,6 +6,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,18 +73,26 @@ public class Invoker {
         final int argCount = args.length - 2;
         final boolean[] anythingFound = {false};
 
+        final Set<List<Class<?>>> invoked = new HashSet<>();
+
         for (Class<?> cls = clazz; cls != null; cls = cls.getSuperclass()) {
             Arrays.stream(cls.getDeclaredMethods()).filter(m -> m.getName().equals(methodName)).forEach(m -> {
                 Class<?>[] parameterTypes = m.getParameterTypes();
-                if (parameterTypes.length > argCount) {
+                if (parameterTypes.length > argCount || (!m.isVarArgs() && parameterTypes.length < argCount)) {
                     return;
                 }
 
+                if (invoked.contains(Arrays.asList(parameterTypes))) {
+                    return;
+                }
+
+                invoked.add(Arrays.asList(parameterTypes));
+
                 int varargsStart = parameterTypes.length;
                 for (int i = 0; i < parameterTypes.length; i++) {
-                    if (i == parameterTypes.length - 1 && parameterTypes[i] == String[].class && m.isVarArgs()) {
+                    if (i == parameterTypes.length - 1 && parameterTypes[i].isAssignableFrom(String[].class) && m.isVarArgs()) {
                         varargsStart = i;
-                    } else if (parameterTypes[i] != String.class) {
+                    } else if (!parameterTypes[i].isAssignableFrom(String.class)) {
                         return;
                     }
                 }

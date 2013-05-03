@@ -28,4 +28,18 @@ public class C extends B {
         }
         System.out.println();
     }
+
+    public void test(CharSequence a, CharSequence b, CharSequence c, CharSequence d) {
+        System.out.println(9);
+        System.out.println(a + " " + b + " " + c + " " + d);
+    }
+
+    public void test(String a, CharSequence... args) {
+        System.out.println(10);
+        System.out.print(a);
+        for (CharSequence s : args) {
+            System.out.print(" " + s);
+        }
+        System.out.println();
+    }
 }
