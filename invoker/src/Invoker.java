@@ -57,51 +57,53 @@ public class Invoker {
         final Set<List<Class<?>>> invoked = new HashSet<>();
 
         for (Class<?> cls = clazz; cls != null; cls = cls.getSuperclass()) {
+            final boolean usePrivateMethods = cls == clazz;
             Arrays.stream(cls.getDeclaredMethods())
-                    .filter(m -> m.getName().equals(methodName))
+                    .filter(m -> m.getName().equals(methodName)
+                                    && (usePrivateMethods || !Modifier.isPrivate(m.getModifiers())))
                     .forEach(m -> {
-                Class<?>[] parameterTypes = m.getParameterTypes();
-                if (parameterTypes.length > argCount
-                        || (!m.isVarArgs() && parameterTypes.length < argCount)) {
-                    return;
-                }
+                        Class<?>[] parameterTypes = m.getParameterTypes();
+                        if (parameterTypes.length > argCount
+                                || (!m.isVarArgs() && parameterTypes.length < argCount)) {
+                            return;
+                        }
 
-                if (invoked.contains(Arrays.asList(parameterTypes))) {
-                    return;
-                }
+                        if (invoked.contains(Arrays.asList(parameterTypes))) {
+                            return;
+                        }
 
-                invoked.add(Arrays.asList(parameterTypes));
+                        invoked.add(Arrays.asList(parameterTypes));
 
-                int varargsStart = parameterTypes.length;
-                for (int i = 0; i < parameterTypes.length; i++) {
-                    if (i == parameterTypes.length - 1
-                            && parameterTypes[i].isAssignableFrom(String[].class)
-                            && m.isVarArgs()) {
-                        varargsStart = i;
-                    } else if (!parameterTypes[i].isAssignableFrom(String.class)) {
-                        return;
-                    }
-                }
-                anythingFound[0] = true;
+                        int varargsStart = parameterTypes.length;
+                        for (int i = 0; i < parameterTypes.length; i++) {
+                            if (i == parameterTypes.length - 1
+                                    && parameterTypes[i].isAssignableFrom(String[].class)
+                                    && m.isVarArgs()) {
+                                varargsStart = i;
+                            } else if (!parameterTypes[i].isAssignableFrom(String.class)) {
+                                return;
+                            }
+                        }
+                        anythingFound[0] = true;
 
-                System.out.println(m.toString());
-                if (varargsStart == parameterTypes.length) {
-                    final String[] nonVararg = new String[varargsStart];
-                    System.arraycopy(args, 2, nonVararg, 0, varargsStart);
-                    invokeMethod(m, instance, nonVararg);
-                } else if (varargsStart == 0) {
-                    final String[] vararg = new String[argCount];
-                    System.arraycopy(args, 2, vararg, 0, argCount);
-                    invokeMethod(m, instance, new Object[]{vararg});
-                } else {
-                    Object[] methodArgs = new Object[varargsStart + 1];
-                    System.arraycopy(args, 2, methodArgs, 0, varargsStart);
-                    String[] vararg = new String[argCount - varargsStart];
-                    methodArgs[varargsStart] = vararg;
-                    System.arraycopy(args, 2 + varargsStart, vararg, 0, argCount - varargsStart);
-                    invokeMethod(m, instance, methodArgs);
-                }
-            });
+                        System.out.println(m.toString());
+                        if (varargsStart == parameterTypes.length) {
+                            final String[] nonVararg = new String[varargsStart];
+                            System.arraycopy(args, 2, nonVararg, 0, varargsStart);
+                            invokeMethod(m, instance, nonVararg);
+                        } else if (varargsStart == 0) {
+                            final String[] vararg = new String[argCount];
+                            System.arraycopy(args, 2, vararg, 0, argCount);
+                            invokeMethod(m, instance, new Object[]{vararg});
+                        } else {
+                            Object[] methodArgs = new Object[varargsStart + 1];
+                            System.arraycopy(args, 2, methodArgs, 0, varargsStart);
+                            String[] vararg = new String[argCount - varargsStart];
+                            methodArgs[varargsStart] = vararg;
+                            System.arraycopy(args, 2 + varargsStart, vararg, 0, argCount - varargsStart);
+                            invokeMethod(m, instance, methodArgs);
+                        }
+                    });
         }
         if (!anythingFound[0]) {
             System.out.println("No methods matching " + methodName + "(" + paramsString(argCount) + ") found");
