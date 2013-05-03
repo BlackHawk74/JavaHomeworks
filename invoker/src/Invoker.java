@@ -18,28 +18,9 @@ import java.util.Set;
  */
 public class Invoker {
 
-    private static Class<?> loadClass(String name) {
-        URL currentDir;
-
-        try {
-            currentDir = new URL("file://.");
-        } catch (MalformedURLException e) {
-            System.out.println("Error in code: should never reach here");
-            return null;
-        }
-
-        ClassLoader loader = new URLClassLoader(new URL[]{currentDir});
-        try {
-            return loader.loadClass(name);
-        } catch (ClassNotFoundException e) {
-            System.out.println("Class " + name + " not found");
-            return null;
-        }
-    }
-
     public static void main(String... args) {
         if (args.length < 2) {
-            System.out.println("Usage: Invoker class-name metod-name [args...]");
+            System.out.println("Usage: Invoker class-name method-name [args...]");
             return;
         }
 
@@ -76,9 +57,12 @@ public class Invoker {
         final Set<List<Class<?>>> invoked = new HashSet<>();
 
         for (Class<?> cls = clazz; cls != null; cls = cls.getSuperclass()) {
-            Arrays.stream(cls.getDeclaredMethods()).filter(m -> m.getName().equals(methodName)).forEach(m -> {
+            Arrays.stream(cls.getDeclaredMethods())
+                    .filter(m -> m.getName().equals(methodName))
+                    .forEach(m -> {
                 Class<?>[] parameterTypes = m.getParameterTypes();
-                if (parameterTypes.length > argCount || (!m.isVarArgs() && parameterTypes.length < argCount)) {
+                if (parameterTypes.length > argCount
+                        || (!m.isVarArgs() && parameterTypes.length < argCount)) {
                     return;
                 }
 
@@ -90,7 +74,9 @@ public class Invoker {
 
                 int varargsStart = parameterTypes.length;
                 for (int i = 0; i < parameterTypes.length; i++) {
-                    if (i == parameterTypes.length - 1 && parameterTypes[i].isAssignableFrom(String[].class) && m.isVarArgs()) {
+                    if (i == parameterTypes.length - 1
+                            && parameterTypes[i].isAssignableFrom(String[].class)
+                            && m.isVarArgs()) {
                         varargsStart = i;
                     } else if (!parameterTypes[i].isAssignableFrom(String.class)) {
                         return;
@@ -115,12 +101,29 @@ public class Invoker {
                     System.arraycopy(args, 2 + varargsStart, vararg, 0, argCount - varargsStart);
                     invokeMethod(m, instance, methodArgs);
                 }
-
-
             });
         }
         if (!anythingFound[0]) {
             System.out.println("No methods matching " + methodName + "(" + paramsString(argCount) + ") found");
+        }
+    }
+
+    private static Class<?> loadClass(String name) {
+        URL currentDir;
+
+        try {
+            currentDir = new URL("file://.");
+        } catch (MalformedURLException e) {
+            System.out.println("Error in code: should never reach here");
+            return null;
+        }
+
+        ClassLoader loader = new URLClassLoader(new URL[]{currentDir});
+        try {
+            return loader.loadClass(name);
+        } catch (ClassNotFoundException e) {
+            System.out.println("Class " + name + " not found");
+            return null;
         }
     }
 
@@ -147,6 +150,7 @@ public class Invoker {
         try {
             method.setAccessible(true);
             method.invoke(that, args);
+            System.out.println("Object after invocation: " + that);
         } catch (InvocationTargetException e) {
             System.out.println("Method threw an exception: " + e.getCause());
         } catch (IllegalAccessException e) {

@@ -42,4 +42,13 @@ public class C extends B {
         }
         System.out.println();
     }
+
+    private void test(String a, String b, String c, String... args) {
+        System.out.println(12);
+        System.out.print(a + " " + b + " " + c);
+        for (String s : args) {
+            System.out.print(" " + s);
+        }
+        System.out.println();
+    }
 }
