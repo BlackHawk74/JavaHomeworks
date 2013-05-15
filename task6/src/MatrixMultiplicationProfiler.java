@@ -1,13 +1,6 @@
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Created with IntelliJ IDEA.
- * User: blackhawk
- * Date: 15.05.13
- * Time: 23:53
- */
-
-/**
  * Calculates matrix product in  multiple threads.
  *
  * @author Dmitry Bobrov
@@ -76,9 +69,9 @@ public class MatrixMultiplicationProfiler {
      */
     private class Worker implements Runnable {
         private final CountDownLatch startSignal, doneSignal;
-        int row;
-        int col;
-        int count;
+        private int row;
+        private int col;
+        private int count;
 
         /**
          * Assigns a part of matrix to calculate a product.

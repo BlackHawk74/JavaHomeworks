@@ -1,13 +1,12 @@
 import java.util.Random;
 
-/**
- * Created with IntelliJ IDEA.
- * User: blackhawk
- * Date: 15.05.13
- * Time: 23:15
- */
 public class MatrixMultiplication {
 
+    /**
+     * Launches random matrix multiplication.
+     *
+     * @param args first element — positive number representing matrices size, second — positive number representing thread count, third — if set and equals "graphgen", makes program generate output for easy parsing.
+     */
     public static void main(String... args) {
         if (args.length < 2) {
             System.err.println("Usage: MatrixMultiplication matrixSize threadCount");
