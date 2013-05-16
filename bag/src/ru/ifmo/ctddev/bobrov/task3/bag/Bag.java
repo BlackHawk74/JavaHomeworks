@@ -34,13 +34,13 @@ public class Bag<E> extends AbstractCollection<E> {
         }
         modCount++;
         size++;
+        List<E> group;
         if (!contains(element)) {
-            data.put(element, new ArrayList<E>() {{
-                add(0, element);
-            }});
-            return true;
+            group = new ArrayList<>();
+            data.put(element, group);
+        } else {
+            group = data.get(element);
         }
-        List<E> group = data.get(element);
         return group.add(element);
     }
 
@@ -49,7 +49,17 @@ public class Bag<E> extends AbstractCollection<E> {
         if (element == null) {
             throw new NullPointerException();
         }
-        return removeAndGet(element) != null;
+        List<E> group = data.get(element);
+        if (group == null) {
+            return false;
+        }
+        size--;
+        modCount++;
+        E result = group.remove(group.size() - 1);
+        if (group.isEmpty()) {
+            data.remove(element);
+        }
+        return result != null;
     }
 
     @Override
@@ -101,49 +111,7 @@ public class Bag<E> extends AbstractCollection<E> {
         return size > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) size;
     }
 
-    @Override
-    public boolean isEmpty() {
-        return size() == 0;
-    }
-
-    E removeAndGet(Object o) {
-        List<E> group = data.get(o);
-        if (group == null) {
-            return null;
-        }
-        size--;
-        modCount++;
-        E result = group.remove(group.size() - 1);
-        if (group.isEmpty()) {
-            data.remove(o);
-        }
-        return result;
-    }
-
-    boolean removeExactly(E what) {
-        List<E> group = data.get(what);
-        if (group != null) {
-            for (Iterator<E> it = group.iterator(); it.hasNext(); ) {
-                E cur = it.next();
-                if (cur == what) {
-                    it.remove();
-                    if (group.isEmpty()) {
-                        data.remove(what);
-                    }
-                    size--;
-                    modCount++;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    int getModCount() {
-        return modCount;
-    }
-
-    private class BagIterator implements Iterator<E> {
+    private final class BagIterator implements Iterator<E> {
         private int expectedModCount = modCount;
 
         private final Iterator<E> mapIterator;
