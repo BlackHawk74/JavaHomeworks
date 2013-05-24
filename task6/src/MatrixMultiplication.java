@@ -32,6 +32,11 @@ public class MatrixMultiplication {
         MatrixMultiplicationProfiler multiplier = new MatrixMultiplicationProfiler(a, b, result, threadCount);
         long ns = multiplier.multiply();
 
+        if (ns == -1) {
+            System.err.println("Multiplication was interrupted, aborting");
+            return;
+        }
+
         int sum = 0;
         for (int[] row : result) {
             for (int i : row) {

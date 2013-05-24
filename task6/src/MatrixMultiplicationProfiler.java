@@ -6,7 +6,24 @@ import java.util.concurrent.CountDownLatch;
  * @author Dmitry Bobrov
  */
 public class MatrixMultiplicationProfiler {
-    private final int[][] a, b, c;
+    /**
+     * multiplicand
+     */
+    private final int[][] a;
+
+    /**
+     * multiplier
+     */
+    private final int[][] b;
+
+    /**
+     * result
+     */
+    private final int[][] c;
+
+    /**
+     * count of worker threads.
+     */
     private final int threadCount;
 
     /**
