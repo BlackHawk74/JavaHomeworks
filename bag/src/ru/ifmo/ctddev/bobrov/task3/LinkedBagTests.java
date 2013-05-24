@@ -31,7 +31,7 @@ public class LinkedBagTests {
         Assert.assertTrue(!it1.hasNext() && !it2.hasNext());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullElements() {
         new LinkedBag<>(Arrays.asList((String) null));
     }
@@ -95,6 +95,20 @@ public class LinkedBagTests {
             Assert.assertEquals(next, it.next());
         }
         Assert.assertTrue(!it.hasNext() && !it2.hasNext());
+    }
+
+    @Test
+    public void testIteratorRemoveMultiple() {
+        LinkedBag<String> bag = new LinkedBag<>(Arrays.asList("aaa", "ddd", "eee", "bbb", "ccc", "bbb", "ccc", "aaa", "bbb"));
+        Iterator<String> it = bag.iterator();
+        while (it.hasNext()) {
+            String s = it.next();
+            if ("ddd".equals(s) || "eee".equals(s)) {
+                it.remove();
+            }
+        }
+        Assert.assertFalse(bag.contains("ddd"));
+        Assert.assertFalse(bag.contains("eee"));
     }
 
     @Test(expected = IllegalStateException.class)

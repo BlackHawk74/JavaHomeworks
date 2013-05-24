@@ -29,37 +29,29 @@ public class Bag<E> extends AbstractCollection<E> {
 
     @Override
     public boolean add(E element) {
-        if (element == null) {
-            throw new NullPointerException();
-        }
         modCount++;
         size++;
-        List<E> group;
-        if (!contains(element)) {
+        List<E> group = data.get(element);
+        if (group == null) {
             group = new ArrayList<>();
             data.put(element, group);
-        } else {
-            group = data.get(element);
         }
         return group.add(element);
     }
 
     @Override
     public boolean remove(Object element) {
-        if (element == null) {
-            throw new NullPointerException();
-        }
         List<E> group = data.get(element);
         if (group == null) {
             return false;
         }
         size--;
         modCount++;
-        E result = group.remove(group.size() - 1);
+        group.remove(group.size() - 1);
         if (group.isEmpty()) {
             data.remove(element);
         }
-        return result != null;
+        return true;
     }
 
     @Override
@@ -150,7 +142,7 @@ public class Bag<E> extends AbstractCollection<E> {
             groupIterator.remove();
             List<E> group = data.get(last);
             if (group.isEmpty()) {
-                data.remove(last);
+                mapIterator.remove();
             }
             canRemove = false;
             expectedModCount = ++modCount;

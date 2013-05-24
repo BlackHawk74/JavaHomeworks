@@ -31,9 +31,6 @@ public class LinkedBag<E> extends AbstractCollection<E> {
 
     @Override
     public boolean add(E el) {
-        if (el == null) {
-            throw new NullPointerException();
-        }
         modCount++;
         size++;
         Set<Wrapper<E>> group;

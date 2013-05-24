@@ -44,7 +44,7 @@ public class BagTests {
         Assert.assertEquals(expected, prev);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullElements() {
         new Bag<>(Arrays.asList((Object) null));
     }
@@ -95,6 +95,21 @@ public class BagTests {
         it.remove();
         Assert.assertFalse(bag.contains("ddd"));
     }
+
+    @Test
+    public void testIteratorRemoveMultiple() {
+        Bag<String> bag = new Bag<>(Arrays.asList("aaa", "ddd", "eee", "bbb", "ccc", "bbb", "ccc", "aaa", "bbb"));
+        Iterator<String> it = bag.iterator();
+        while (it.hasNext()) {
+            String s = it.next();
+            if ("ddd".equals(s) || "eee".equals(s)) {
+                it.remove();
+            }
+        }
+        Assert.assertFalse(bag.contains("ddd"));
+        Assert.assertFalse(bag.contains("eee"));
+    }
+
 
     @Test(expected = IllegalStateException.class)
     public void testIteratorInvalidRemove() {
