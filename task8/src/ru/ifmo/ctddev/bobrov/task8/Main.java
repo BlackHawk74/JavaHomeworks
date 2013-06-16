@@ -6,9 +6,10 @@ package ru.ifmo.ctddev.bobrov.task8;
 public class Main {
     /**
      * Runs on program startup.
+     *
      * @param args if first argument is set and is positive number, sets number of worker threads to run tasks. If second argument is set and is positive number, sets number of generation threads.
      */
-    public static void main(String ... args) {
+    public static void main(String... args) {
         int producers = 2;
         int consumers = 2;
 
@@ -28,7 +29,8 @@ public class Main {
 
     /**
      * Parses a positive integer represented by parameter.
-     * @param str a string containing number.
+     *
+     * @param str      a string containing number.
      * @param fallback a value to return if parsing failed.
      * @return a positive number represented by argument string.
      */

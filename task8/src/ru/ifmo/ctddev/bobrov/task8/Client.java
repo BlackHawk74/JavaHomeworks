@@ -18,7 +18,8 @@ public class Client {
 
 
     /**
-     * Starts generating tasks for specified ru.ifmo.ctddev.bobrov.task8.TaskRunner.
+     * Starts generating tasks for specified TaskRunner.
+     *
      * @param taskRunner an executor for generated tasks.
      * @throws NullPointerException if parameter is null.
      */
