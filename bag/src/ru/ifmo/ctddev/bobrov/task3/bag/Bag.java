@@ -55,43 +55,6 @@ public class Bag<E> extends AbstractCollection<E> {
     }
 
     @Override
-    public boolean removeAll(Collection<?> collection) {
-        boolean modified = false;
-        if (collection == this) {
-            modified = !isEmpty();
-            clear();
-            return modified;
-        }
-        for (Object o: collection) {
-            if (data.containsKey(o)) {
-                data.remove(o);
-                modified = true;
-            }
-        }
-        return modified;
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> collection) {
-        if (collection == this) {
-            return false;
-        }
-        boolean result = false;
-        for (Iterator it = data.keySet().iterator(); it.hasNext(); ) {
-            Object obj = it.next();
-            if (!collection.contains(obj)) {
-                result = true;
-                size = size - data.get(obj).size();
-                it.remove();
-            }
-        }
-        if (result) {
-            modCount++;
-        }
-        return result;
-    }
-
-    @Override
     public void clear() {
         data.clear();
         size = 0;
@@ -144,6 +107,7 @@ public class Bag<E> extends AbstractCollection<E> {
             if (group.isEmpty()) {
                 mapIterator.remove();
             }
+            size--;
             canRemove = false;
             expectedModCount = ++modCount;
         }

@@ -1,7 +1,6 @@
 package ru.ifmo.ctddev.bobrov.task3.bag;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class LinkedBag<E> extends AbstractCollection<E> {
     private final Map<E, Set<Wrapper<E>>> data;
@@ -63,21 +62,6 @@ public class LinkedBag<E> extends AbstractCollection<E> {
     }
 
     @Override
-    public boolean removeAll(Collection<?> collection) {
-        if (collection == this) {
-            boolean modified = !isEmpty();
-            clear();
-            return modified;
-        }
-        return filter(collection::contains);
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> collection) {
-        return collection != this && filter(o -> !collection.contains(o));
-    }
-
-    @Override
     public void clear() {
         data.clear();
         size = 0;
@@ -87,17 +71,6 @@ public class LinkedBag<E> extends AbstractCollection<E> {
     @Override
     public int size() {
         return size > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) size;
-    }
-
-    private boolean filter(Predicate<Object> predicate) {
-        boolean modified = false;
-        for (Iterator <E> it = iterator(); it.hasNext();) {
-            if (predicate.test(it.next())) {
-                it.remove();
-                modified = true;
-            }
-        }
-        return modified;
     }
 
     private final class LinkedBagIterator implements Iterator<E> {
